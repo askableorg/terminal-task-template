@@ -146,6 +146,7 @@ Two equivalent routes:
 - [ ] `network_mode` is `"no-network"`, or `metadata.network_justification` explains why the task cannot run offline. Runtime (agent and verifier) has no network; dependencies are installed into the image at **build** time, where network is expected.
 - [ ] The environment installs `tmux` (and `asciinema`) at build time — the calibration agent cannot start without them on an offline runtime.
 - [ ] The environment has `git` initialized at the intended base state, with no history that leaks the solution or any future state.
+- [ ] `git status --ignored` shows nothing under your task directory — a gitignore rule that reaches into `tasks/` drops files from the commit while leaving them on your disk, so the task passes locally and arrives incomplete.
 - [ ] No secrets are committed and network access is declared explicitly.
 
 ## Local template checks

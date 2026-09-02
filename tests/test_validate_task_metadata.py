@@ -258,6 +258,30 @@ Signature: Jane Doe
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("network_mode", result.stderr)
 
+    def test_rejects_a_task_whose_files_are_gitignored(self) -> None:
+        # A rule matching inside tasks/ drops files from the commit while
+        # leaving them on the author's disk: green locally, incomplete on
+        # arrival. This is how a run.log corpus was lost.
+        task_dir = self.make_task()
+        repo = task_dir.parent
+        subprocess.run(["git", "init", "-q"], cwd=repo, check=True)
+        (repo / ".gitignore").write_text("*.log\n")
+        (task_dir / "fixtures").mkdir(parents=True, exist_ok=True)
+        (task_dir / "fixtures" / "run.log").write_text("exit 0\n")
+        result = self.validate(task_dir)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("gitignore", result.stderr)
+
+    def test_accepts_a_task_with_no_ignored_files(self) -> None:
+        task_dir = self.make_task()
+        repo = task_dir.parent
+        subprocess.run(["git", "init", "-q"], cwd=repo, check=True)
+        (repo / ".gitignore").write_text("/*.log\n")
+        (task_dir / "fixtures").mkdir(parents=True, exist_ok=True)
+        (task_dir / "fixtures" / "run.log").write_text("exit 0\n")
+        result = self.validate(task_dir)
+        self.assertEqual(result.returncode, 0, result.stderr)
+
 
 if __name__ == "__main__":
     unittest.main()
