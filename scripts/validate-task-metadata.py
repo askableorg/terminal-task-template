@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import subprocess
 import sys
 import tomllib
 from pathlib import Path
@@ -211,6 +212,41 @@ def validate_attestations(task_dir: Path, commit: str, errors: list[str]) -> Non
                 )
 
 
+def validate_not_ignored(task_dir: Path, errors: list[str]) -> None:
+    """Refuse a task with files its own repo is ignoring.
+
+    A gitignore rule that matches inside tasks/ removes files from the commit
+    while leaving them on the author's disk, so everything passes locally and
+    the reviewer receives an incomplete task. A run.log corpus was lost this
+    way: the instruction told the agent to read logs that had never been
+    committed, which made the task unsolvable for a reason no one could see.
+    """
+    try:
+        result = subprocess.run(
+            # -C so git discovers the repo from the task directory: the
+            # validator's own cwd is not necessarily inside it.
+            ["git", "-C", str(task_dir), "ls-files", "--others", "--ignored",
+             "--exclude-standard", "--", "."],
+            capture_output=True, text=True, check=False,
+        )
+    except OSError:
+        return  # no git available; nothing to check
+    if result.returncode != 0:
+        return  # not a repo, or git refused: not this script's problem
+    ignored = [
+        line for line in result.stdout.splitlines()
+        if line.strip() and not line.endswith(".DS_Store")
+    ]
+    if ignored:
+        shown = ", ".join(ignored[:5])
+        more = f" (and {len(ignored) - 5} more)" if len(ignored) > 5 else ""
+        errors.append(
+            f"{len(ignored)} file(s) under {task_dir} are excluded by a gitignore "
+            f"rule and will not reach the reviewer: {shown}{more}. Commit them "
+            "with 'git add -f', or narrow the rule."
+        )
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--task", type=Path, required=True)
@@ -218,6 +254,7 @@ def main() -> int:
     args = parser.parse_args()
 
     errors: list[str] = []
+    validate_not_ignored(args.task, errors)
     template_example = validate_metadata(args.task, errors)
     validate_provenance(args.task, errors)
     if not template_example:
