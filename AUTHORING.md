@@ -91,6 +91,7 @@ Assume the agent will try to win without solving the problem.
 - The agent must not be able to read the tests or the reference solution (the execution model isolates them — don't defeat it by copying test data into the environment).
 - Attempt a hack yourself: hardcode expected outputs, stub the interface, wrap the checker. Your suite must catch each attempt.
 - Don't leave the reward signal derivable from artefacts in the environment (fixtures named after their expected results, etc.).
+- **Never run the verifier from the agent's directory with a runner that trusts its cwd.** Harbor starts `test.sh` in the image `WORKDIR` (`/app` in the templates) — the directory the agent has been writing to all episode. `python3 -m pytest` puts that cwd first on `sys.path`, so a stray `/app/json.py` (or `csv.py`, `pathlib.py`, ...) left by the agent is imported by your suite in place of the stdlib and can forge a passing run; bun loads `bunfig.toml` — including `[test].preload`, which executes arbitrary scripts inside the test process — from its cwd. Use `cd /tests && python3 -P -m pytest -p no:cacheprovider test_outputs.py` (`-P` keeps the launcher from adding the cwd to `sys.path`; mind the order — `-p no:cacheprovider` is a pytest flag and placed before `-m pytest` it kills Python with `Unknown option: -p`, scoring every trial 0, the oracle included) and apply the same reasoning to your own runner: if it imports, resolves, or reads config from the cwd, run it from `/tests`.
 
 ## 8. Check your own difficulty before submitting
 

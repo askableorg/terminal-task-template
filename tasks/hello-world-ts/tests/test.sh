@@ -14,9 +14,16 @@ VERIFIER_DIR="/logs/verifier"
 # Guard against errexit so a failing suite still lets us write reward.txt,
 # even if Harbor invokes this script under `set -e`.
 # Suite output goes to suite-stdout.txt (not Harbor's combined test-stdout.txt).
+#
+# Harbor starts this script in the image WORKDIR (/app) — the directory the
+# agent has been writing to all episode — and bun reads bunfig.toml (including
+# [test].preload, which executes arbitrary scripts inside the test process)
+# from its cwd. `cd /tests` first so the agent cannot plant configuration the
+# verifier will load. Bare imports are safe either way: they resolve from the
+# test file's directory upward (/tests, /), never through /app.
 set +e
 {
-  bun test /tests/test_outputs.ts
+  cd /tests && bun test test_outputs.ts
 } >>"$VERIFIER_DIR/suite-stdout.txt" 2>&1
 TEST_EXIT=$?
 set -e

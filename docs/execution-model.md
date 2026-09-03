@@ -70,11 +70,12 @@ Note the source is `/solution/hello.txt` (the mounted `solution/` dir) and the d
 **Verifier** — `tests/test.sh` runs tooling already baked into the image at build time (the runtime has no network), then checks `/app`:
 
 ```bash
-python3 -m pytest /tests/test_outputs.py   # reads /app/hello.txt, asserts content
+# reads /app/hello.txt, asserts content
+cd /tests && python3 -P -m pytest -p no:cacheprovider test_outputs.py
 # writes 1 or 0 to /logs/verifier/reward.txt
 ```
 
-The test reads `/app/hello.txt` — the exact file the agent (or oracle) wrote — so it is always grading real output, not a copy.
+The test reads `/app/hello.txt` — the exact file the agent (or oracle) wrote — so it is always grading real output, not a copy. It runs from `/tests` with `-P` because `test.sh` starts in the agent's own `WORKDIR` (`/app`), and `python3 -m` would otherwise put that directory first on `sys.path` — letting a planted `/app/pathlib.py` shadow the stdlib inside the verifier (see `AUTHORING.md` §7).
 
 **Filesystem at each phase** (`—` means the path isn't present yet):
 

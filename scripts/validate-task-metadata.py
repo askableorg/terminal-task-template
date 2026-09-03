@@ -212,6 +212,41 @@ def validate_attestations(task_dir: Path, commit: str, errors: list[str]) -> Non
                 )
 
 
+def validate_verifier_invocation(task_dir: Path, errors: list[str]) -> None:
+    """Refuse a verifier that runs pytest with the agent's cwd on sys.path.
+
+    Harbor starts tests/test.sh in the image WORKDIR (/app in the templates) —
+    the directory the agent has been writing to all episode — and the
+    `python -m` launcher puts that cwd first on sys.path. An agent that leaves
+    a /app/json.py (or csv.py, pathlib.py, ...) behind has its module imported
+    by the suite in place of the stdlib and can forge a passing run. `-P`
+    (Python 3.11+) keeps the launcher from adding the cwd; AUTHORING.md §7 has
+    the full hardened invocation.
+    """
+    test_sh = task_dir / "tests" / "test.sh"
+    if not test_sh.is_file():
+        return
+    try:
+        script = test_sh.read_text()
+    except OSError as error:
+        errors.append(f"tests/test.sh: {error}")
+        return
+    for number, line in enumerate(script.splitlines(), start=1):
+        code = line.split("#", 1)[0]
+        # The launcher and its own options, up to `-m pytest`, without
+        # crossing a shell command boundary.
+        match = re.search(r"\bpython[0-9.]*\s+(?P<opts>[^|&;]*?)-m\s+pytest\b", code)
+        if match and not re.search(r"(^|\s)-P(\s|$)", match.group("opts")):
+            errors.append(
+                f"tests/test.sh line {number} runs `python -m pytest` without "
+                "-P: the verifier starts in the agent's WORKDIR (/app), which "
+                "`-m` puts first on sys.path, so a module the agent leaves "
+                "there (e.g. /app/json.py) is imported in place of the stdlib "
+                "and can forge the reward. Use `cd /tests && python3 -P -m "
+                "pytest -p no:cacheprovider test_outputs.py` (AUTHORING.md §7)"
+            )
+
+
 def validate_not_ignored(task_dir: Path, errors: list[str]) -> None:
     """Refuse a task with files its own repo is ignoring.
 
@@ -255,6 +290,7 @@ def main() -> int:
 
     errors: list[str] = []
     validate_not_ignored(args.task, errors)
+    validate_verifier_invocation(args.task, errors)
     template_example = validate_metadata(args.task, errors)
     validate_provenance(args.task, errors)
     if not template_example:
