@@ -88,6 +88,28 @@ class VerifierInvocationTests(unittest.TestCase):
                     "prefix it with `cd /tests && `",
                 )
 
+    def test_bun_is_given_a_path_not_a_bare_filter(self) -> None:
+        # `bun test <name>` treats a bare argument as a *filter*, not a path,
+        # and bun only discovers files carrying ".test"/".spec" in the name.
+        # So `bun test test_outputs.ts` from /tests matches nothing, reports
+        # "filters did not match any test files", exits non-zero and scores
+        # the trial 0 while looking like an ordinary test failure. An absolute
+        # path or a leading ./ is read as a path instead. This shipped once.
+        for script in TEST_SCRIPTS:
+            for number, code in command_lines(script):
+                match = re.search(r"\bbun\s+test\s+(?P<args>[^|&;<>]*)", code)
+                if not match:
+                    continue
+                paths = [a for a in match.group("args").split() if not a.startswith("-")]
+                for arg in paths:
+                    self.assertRegex(
+                        arg,
+                        r"^(/|\./|\.\./)",
+                        f"{script}:{number} passes `{arg}` to bun test as a bare "
+                        "filter; bun will discover no files and score the trial 0. "
+                        "Use ./ or an absolute path.",
+                    )
+
 
 if __name__ == "__main__":
     unittest.main()

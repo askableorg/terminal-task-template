@@ -23,7 +23,7 @@ VERIFIER_DIR="/logs/verifier"
 # test file's directory upward (/tests, /), never through /app.
 set +e
 {
-  cd /tests && bun test test_outputs.ts
+  cd /tests && bun test ./test_outputs.ts
 } >>"$VERIFIER_DIR/suite-stdout.txt" 2>&1
 TEST_EXIT=$?
 set -e
