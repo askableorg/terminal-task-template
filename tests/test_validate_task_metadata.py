@@ -26,6 +26,7 @@ class ValidateTaskMetadataTests(unittest.TestCase):
         ai_tools_line: str | None = None,
         dockerfile: str | None = None,
         agent_tooling_justification: str | None = None,
+        test_sh: str | None = None,
     ) -> Path:
         task_dir = Path(tempfile.mkdtemp()) / "example-task"
         (task_dir / "attestations").mkdir(parents=True)
@@ -85,6 +86,9 @@ class ValidateTaskMetadataTests(unittest.TestCase):
         if dockerfile is not None:
             (task_dir / "environment").mkdir()
             (task_dir / "environment" / "Dockerfile").write_text(dockerfile)
+        if test_sh is not None:
+            (task_dir / "tests").mkdir()
+            (task_dir / "tests" / "test.sh").write_text(test_sh)
         if with_attestation:
             (task_dir / "attestations" / "jane-doe.md").write_text(
                 f"""# Askable Task Contribution Attestation
@@ -234,6 +238,38 @@ Signature: Jane Doe
                 ),
                 agent_tooling_justification="The base image already ships tmux.",
             )
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_rejects_a_verifier_that_runs_pytest_on_the_agents_sys_path(self) -> None:
+        # The verifier starts in the agent's WORKDIR (/app), and `python -m`
+        # puts that cwd first on sys.path — a planted /app/json.py shadows the
+        # stdlib inside the suite and can forge the reward.
+        result = self.validate(
+            self.make_task(
+                test_sh="#!/bin/bash\npython3 -m pytest /tests/test_outputs.py\n"
+            )
+        )
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("sys.path", result.stderr)
+
+    def test_accepts_the_hardened_pytest_invocation(self) -> None:
+        result = self.validate(
+            self.make_task(
+                test_sh=(
+                    "#!/bin/bash\n"
+                    "cd /tests && python3 -P -m pytest -p no:cacheprovider "
+                    "test_outputs.py\n"
+                )
+            )
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_accepts_a_verifier_that_does_not_use_the_python_launcher(self) -> None:
+        # Only the `python -m pytest` launcher form is rejected; other runners
+        # (and a bare pytest entry point) are the author's judgement call.
+        result = self.validate(
+            self.make_task(test_sh="#!/bin/bash\ncd /tests && bun test test_outputs.ts\n")
         )
         self.assertEqual(result.returncode, 0, result.stderr)
 

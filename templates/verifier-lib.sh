@@ -14,6 +14,12 @@ verifier_setup() {
   "$@" >>"$SETUP_LOG" 2>&1
 }
 
+# Note: this helper runs your command as-is, in whatever directory test.sh
+# started in — which Harbor sets to the image WORKDIR (/app), the directory
+# the agent controls. Run the suite from /tests with a runner that does not
+# trust the cwd (e.g. `cd /tests && python3 -P -m pytest ...`); a runner that
+# imports or loads config from the cwd hands the agent code execution inside
+# the verifier. See AUTHORING.md §7.
 verifier_run_tests() {
   "$@" >>"$SUITE_LOG" 2>&1
 }

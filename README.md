@@ -143,6 +143,7 @@ Two equivalent routes:
 - [ ] The task's calibration result lands inside the eligibility band in `calibration-target.json`.
 - [ ] Any author self-check is committed as `calibration/self-check.json`, not `calibration/results.json`.
 - [ ] Verifier **code** lives in `tests/`; verifier **tooling** is either baked into the image at build time or vendored next to the tests and installed offline. Network access in `test.sh` is a defect.
+- [ ] `test.sh` never lets the test runner trust the agent's cwd: Harbor starts the verifier in the image `WORKDIR` (`/app`), and `python3 -m pytest` puts that cwd first on `sys.path`, so a stray `/app/json.py` left by the agent would be imported in place of the stdlib and could forge the reward. Use `cd /tests && python3 -P -m pytest -p no:cacheprovider test_outputs.py`, and run any other runner from `/tests` too (`AUTHORING.md` §7).
 - [ ] `network_mode` is `"no-network"`, or `metadata.network_justification` explains why the task cannot run offline. Runtime (agent and verifier) has no network; dependencies are installed into the image at **build** time, where network is expected.
 - [ ] The environment installs `tmux` (and `asciinema`) at build time — the calibration agent cannot start without them on an offline runtime.
 - [ ] The environment has `git` initialized at the intended base state, with no history that leaks the solution or any future state.
