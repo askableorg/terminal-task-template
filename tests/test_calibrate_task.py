@@ -25,7 +25,7 @@ class CalibrateTaskTests(unittest.TestCase):
             """#!/usr/bin/env bash
 set -euo pipefail
 [[ "$*" == *"-a terminus-2"* ]]
-[[ "$*" == *"-m gemini/gemini-3.6-flash"* ]]
+[[ "$*" == *"-m gemini/gemini-3.8-flash"* ]]
 [[ "$*" == *"-k 10"* ]]
 for i in {0..9}; do
   mkdir -p "$HARBOR_JOBS_DIR/run-$i/verifier"
@@ -63,7 +63,7 @@ done
             (task_dir / "calibration" / "results.json").read_text()
         )
         self.assertEqual(record["commit"], COMMIT)
-        self.assertEqual(record["model"], "gemini/gemini-3.6-flash")
+        self.assertEqual(record["model"], "gemini/gemini-3.8-flash")
         self.assertEqual(record["success_count"], 2)
         self.assertTrue(record["accepted"])
 

@@ -92,7 +92,7 @@ Validate task metadata and submission records:
 
 ## Calibrate difficulty
 
-**Askable runs the authoritative 10-attempt calibration job. You do not need model API keys to submit.** The designated agent, model, attempt count, and eligibility band are defined in `calibration-target.json` at the repo root (currently `terminus-2` with `gemini/gemini-3.6-flash`, 10 attempts, 1–4 successes eligible — see `DIFFICULTY.md` for the full standard). Never edit the target file.
+**Askable runs the authoritative 10-attempt calibration job. You do not need model API keys to submit.** The designated agent, model, attempt count, and eligibility band are defined in `calibration-target.json` at the repo root (currently `terminus-2` with `gemini/gemini-3.8-flash`, 10 attempts, 1–4 successes eligible — see `DIFFICULTY.md` for the full standard). Never edit the target file.
 
 Self-checking before you submit is **expected**: a handful of local agent runs (step 5) catches most band misses before they cost you a full review round-trip. You don't need the designated model — pass `--target` with your own agent/model config; a too-easy task shows up on any strong agent. Just don't let calibration tuning eat your build budget.
 
