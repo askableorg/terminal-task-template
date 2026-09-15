@@ -94,7 +94,9 @@ Validate task metadata and submission records:
 
 **Askable runs the authoritative 10-attempt calibration job. You do not need model API keys to submit.** The designated agent, model, attempt count, and eligibility band are defined in `calibration-target.json` at the repo root (currently `terminus-2` with `gemini/gemini-3.8-flash`, 10 attempts, 1–4 successes eligible — see `DIFFICULTY.md` for the full standard). Never edit the target file.
 
-Self-checking before you submit is **expected**: a handful of local agent runs (step 5) catches most band misses before they cost you a full review round-trip. You don't need the designated model — pass `--target` with your own agent/model config; a too-easy task shows up on any strong agent. Just don't let calibration tuning eat your build budget.
+Self-checking before you submit is **expected**: a handful of local agent runs (step 5) catches most band misses before they cost you a full review round-trip. You don't need the designated model — pass `--target` with your own agent/model config; a too-easy task shows up on any strong agent. `gemini-3.8-flash` is on the free tier of Gemini CLI and Antigravity, so a screen costs you time rather than money.
+
+**Run self-checks on your own credentials.** Askable does not issue shared API keys, and a key committed to your task repository is a rejection — we read the commit history. Read the result one way only: a clean sweep means the task is too easy and you should stop; a clean zero means very little. `DIFFICULTY.md` has the numbers. Don't let calibration tuning eat your build budget.
 
 1. Read [CONTRIBUTING.md](CONTRIBUTING.md) and fill out `provenance.json` for the task.
 2. Commit the task code and provenance, then capture that commit's SHA:
@@ -103,7 +105,7 @@ Self-checking before you submit is **expected**: a handful of local agent runs (
    git commit -m "Add my new terminal task"
    TASK_CODE_COMMIT="$(git rev-parse HEAD)"  # SHA of the commit just made; attestations bind to it
    ```
-3. Copy `.env.example` to `.env` and add an API key for whichever agent/model you self-check with.
+3. Copy `.env.example` to `.env` and add **your own** API key for whichever agent/model you self-check with. `.env` is gitignored; keep it that way.
 4. Complete each contributor attestation in `tasks/my-new-task/attestations/YOUR_GITHUB_HANDLE.md` using `TASK_CODE_COMMIT`.
 5. Self-check — run the calibration with `--self-check` (add `--target <path>` with your own agent/model config if you don't have keys for the designated model):
    ```bash
