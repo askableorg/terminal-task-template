@@ -18,7 +18,7 @@ Use is restricted by the repository license and the Askable participant agreemen
 ## The workflow, end to end
 
 1. **Sign the Askable participant agreement**, then clone this public repository.
-2. **Create your own private GitHub repository** from your clone. All your work lives there, under your account, with real incremental commit history — we review that history as part of acceptance.
+2. **Create your own private GitHub repository** from your clone. All your work lives there, under your account. We do not grade commit hygiene (`CONTRIBUTING.md`); keep your dead ends rather than deleting them.
 3. **Install the tooling:** [Docker](https://docs.docker.com/get-docker/), [uv](https://docs.astral.sh/uv/), and Harbor:
    ```bash
    uv tool install harbor

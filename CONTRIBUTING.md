@@ -12,7 +12,9 @@ Three conditions are absolute:
 2. **The instruction is yours.** `instruction.md` must be hand-written, or edited so heavily that every requirement is your own. Pasted AI-generated instructions have a recognisable signature and are rejected on sight (see `AUTHORING.md` §3).
 3. **Disclose your tools.** List every AI tool used on the task in `metadata.ai_tools_used` in `task.toml` (e.g. `["claude-code", "cursor"]`; use `[]` if none). The automated checks validate the field's format.
 
-Your private repository's incremental commit history — including the dead ends — is part of how we verify this. A single giant commit is a red flag regardless of how the work was produced.
+**We do not grade your commit hygiene.** You were selected partly for fluency with agentic tools, and those tools legitimately produce large commits: you prompt, a dozen files change, you read them, you commit. Counting commits would measure whether you perform tidiness rather than whether you did the work, and anyone who knew the rule could satisfy it in ten minutes. Condition 1 above is the real check, and the walkthrough is where it happens.
+
+Do keep your dead ends rather than deleting them — they are useful at review — and note that we still read history for two narrow reasons: a leaked API key (`DIFFICULTY.md`), and a task environment whose git state gives the solution away (`AUTHORING.md` §6).
 
 Every contributor must complete `tasks/<task>/attestations/<github-handle>.md` against the task-code commit. The attestation affirms the conditions above, authority to contribute the material, and assignment of all contribution rights to Askable.
 
