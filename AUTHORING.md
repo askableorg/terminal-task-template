@@ -96,11 +96,11 @@ Assume the agent will try to win without solving the problem.
 ## 8. Check your own difficulty before submitting
 
 1. Validate the oracle (`./scripts/validate-task.sh`) — reward `1`, repeatedly.
-2. Run real agent attempts locally with Harbor: `terminus-2` is the default; `antigravity` or `gemini-cli` give a Gemini-flavoured pass. Five or more attempts tells you something; one tells you nothing.
+2. Run real agent attempts locally with Harbor on **your own credentials**: `terminus-2` is the default; `antigravity` or `gemini-cli` give a Gemini-flavoured pass on the free tier, which is enough for this. Five or more attempts tells you something; one tells you nothing. Three tells you one thing only — see step 4.
 3. **Watch the failure trajectories.** This is the step that separates professionals. Failures must come from the problem — reasoning collapses, wrong-approach commitment, missed edges — not from ambiguity, broken builds, or unfair tests. An agent failing because your instruction confused it is a defect in the task, not evidence of difficulty.
-4. Compare against `DIFFICULTY.md`: the target is a task a frontier model passes roughly 2 times in 10. If the agent cruises, the task is too easy — deepen the problem, don't hide requirements. If it never gets anywhere, check for unfairness before congratulating yourself.
+4. Compare against `DIFFICULTY.md`: the target is a task a frontier model passes roughly 2 times in 10. **Read the result one way only.** A clean sweep means the task is too easy — deepen the problem, don't hide requirements. A clean zero means very little: it is the most likely outcome for a well-calibrated task *and* a common one for a task that will be returned at ten attempts (`DIFFICULTY.md` has the table). So a self-check can tell you to stop; it can never tell you that you are done. If the agent never gets anywhere, check for unfairness before congratulating yourself.
 
-Authoritative calibration is run by Askable against `calibration-target.json`; you don't need model API access for acceptance, but local self-checks catch most band misses before they cost you a review cycle.
+Authoritative calibration is run by Askable against `calibration-target.json`; you don't need model API access for acceptance, but local self-checks catch most band misses before they cost you a review cycle. Askable does not issue shared API keys — use your own, keep it in a gitignored `.env`, and see `DIFFICULTY.md` for why.
 
 ## 9. Common rejection reasons
 
